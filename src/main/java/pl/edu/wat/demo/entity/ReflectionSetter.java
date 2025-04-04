@@ -1,19 +1,22 @@
-package pl.edu.wat.plugin;
+package pl.edu.wat.demo.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.pool.TypePool;
-import org.gradle.api.logging.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
+@AllArgsConstructor
+@Slf4j
 public class ReflectionSetter {
 
     @Getter
@@ -22,8 +25,17 @@ public class ReflectionSetter {
     private final ByteBuddy byteBuddy;
     private final String basePackage;
     private final String sourceRootPath;
-    private final Logger logger;
     private final File outputDir;
+
+    public static void main(String[] args) {
+        new ReflectionSetter(
+                TypePool.Default.ofSystemLoader(),
+                "pl.edu.wat.demo.repository",
+                "pl.edu.wat.demo",
+                "src/main/java",
+                new File("build/classes/java/main")
+        ).generateRepositories();
+    }
 
     @Builder
     public ReflectionSetter(
@@ -31,14 +43,11 @@ public class ReflectionSetter {
             String repositoryPackage,
             String basePackage,
             String sourceRootPath,
-            Logger logger,
             File outputDir) {
 
         // Required parameters
         this.typePool = Optional.ofNullable(typePool).orElseThrow(() ->
                 new IllegalArgumentException("TypePool cannot be null"));
-        this.logger = Optional.ofNullable(logger).orElseThrow(() ->
-                new IllegalArgumentException("Logger cannot be null"));
         this.outputDir = Optional.ofNullable(outputDir).orElseThrow(() ->
                 new IllegalArgumentException("OutputDir cannot be null"));
 
@@ -52,10 +61,10 @@ public class ReflectionSetter {
     }
 
     public void generateRepositories() {
-        RestEntityScanner scanner = new RestEntityScanner(typePool, basePackage, sourceRootPath, logger);
+        RestEntityScanner scanner = new RestEntityScanner(typePool, basePackage, sourceRootPath);
         Set<TypeDescription> annotatedEntities = scanner.scanForAnnotatedEntities();
 
-        logger.lifecycle("Found {} entities annotated with @RestEntity", annotatedEntities.size());
+        log.info("Found {} entities annotated with @RestEntity", annotatedEntities.size());
 
         for (TypeDescription entityClass : annotatedEntities) {
             generateRepositoryForEntity(entityClass);
@@ -85,9 +94,9 @@ public class ReflectionSetter {
         // Save the generated interface to the output directory
         try {
             unloaded.saveIn(outputDir);
-            logger.lifecycle("Generated repository interface: {}", repositoryName);
+            log.info("Generated repository interface: {}", repositoryName);
         } catch (IOException e) {
-            logger.error("Failed to save repository interface {}: {}", repositoryName, e.getMessage());
+            log.error("Failed to save repository interface {}: {}", repositoryName, e.getMessage());
         }
     }
 }

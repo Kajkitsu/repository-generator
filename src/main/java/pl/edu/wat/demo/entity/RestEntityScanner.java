@@ -1,9 +1,9 @@
-package pl.edu.wat.plugin;
+package pl.edu.wat.demo.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.pool.TypePool;
-import org.gradle.api.logging.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,12 +15,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @AllArgsConstructor
+@Slf4j
 public class RestEntityScanner {
 
     private final TypePool typePool;
     private final String basePackage;
     private final String sourceRootPath;
-    private final Logger logger;
 
     public Set<TypeDescription> scanForAnnotatedEntities() {
         Set<TypeDescription> annotatedEntities = new HashSet<>();
@@ -44,15 +44,15 @@ public class RestEntityScanner {
                 try {
                     TypeDescription typeDesc = typePool.describe(className).resolve();
                     if (typeDesc.getDeclaredAnnotations().isAnnotationPresent(typePool.describe(RestEntity.class.getName()).resolve())) {
-                        logger.debug("Found @RestEntity annotated class: {}", className);
+                        log.debug("Found @RestEntity annotated class: {}", className);
                         annotatedEntities.add(typeDesc);
                     }
                 } catch (Exception e) {
-                    logger.warn("Error resolving class {}: {}", className, e.getMessage());
+                    log.warn("Error resolving class {}: {}", className, e.getMessage());
                 }
             }
         } catch (IOException e) {
-            logger.error("Error scanning for annotated entities: {}", e.getMessage());
+            log.error("Error scanning for annotated entities: {}", e.getMessage());
         }
 
         return annotatedEntities;

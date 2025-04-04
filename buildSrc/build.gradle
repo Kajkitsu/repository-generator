@@ -19,7 +19,7 @@ gradlePlugin {
     plugins {
         restRepositoryPlugin {
             id = 'pl.edu.wat.rest-repository'
-            implementationClass = 'pl.edu.wat.plugin.RestRepositoryPlugin'
+            implementationClass = 'pl.edu.wat.demo.entity.RestRepositoryPlugin'
         }
     }
 }

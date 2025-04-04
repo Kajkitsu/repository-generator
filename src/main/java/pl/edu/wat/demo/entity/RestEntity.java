@@ -1,4 +1,4 @@
-package pl.edu.wat.plugin;
+package pl.edu.wat.demo.entity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
